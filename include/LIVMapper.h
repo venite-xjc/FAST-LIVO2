@@ -1,4 +1,4 @@
-/* 
+/*
 This file is part of FAST-LIVO2: Fast, Direct LiDAR-Inertial-Visual Odometry.
 
 Developer: Chunran Zheng <zhengcr@connect.hku.hk>
@@ -26,16 +26,18 @@ which is included as part of this source code package.
 #include <geometry_msgs/msg/transform_stamped.hpp>
 #include <nav_msgs/msg/path.hpp>
 #include <vikit/camera_loader.h>
+#include <sensor_msgs/msg/camera_info.hpp>
+#include <geometry_msgs/msg/pose_stamped.hpp>
 
 class LIVMapper
 {
 public:
-  LIVMapper(rclcpp::Node::SharedPtr &node, std::string node_name, const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
+  LIVMapper(rclcpp::Node::SharedPtr& node, std::string node_name, const rclcpp::NodeOptions& options = rclcpp::NodeOptions());
   ~LIVMapper();
-  void initializeSubscribersAndPublishers(rclcpp::Node::SharedPtr &nh, image_transport::ImageTransport &it_);
-  void initializeComponents(rclcpp::Node::SharedPtr &node);
+  void initializeSubscribersAndPublishers(rclcpp::Node::SharedPtr& nh, image_transport::ImageTransport& it_);
+  void initializeComponents(rclcpp::Node::SharedPtr& node);
   void initializeFiles();
-  void run(rclcpp::Node::SharedPtr &node);
+  void run(rclcpp::Node::SharedPtr& node);
   void gravityAlignment();
   void handleFirstFrame();
   void stateEstimationAndMapping();
@@ -43,37 +45,39 @@ public:
   void handleLIO();
   void savePCD();
   void processImu();
-  
-  bool sync_packages(LidarMeasureGroup &meas);
-  void prop_imu_once(StatesGroup &imu_prop_state, const double dt, V3D acc_avr, V3D angvel_avr);
+
+  bool sync_packages(LidarMeasureGroup& meas);
+  void prop_imu_once(StatesGroup& imu_prop_state, const double dt, V3D acc_avr, V3D angvel_avr);
   void imu_prop_callback();
-  void transformLidar(const Eigen::Matrix3d rot, const Eigen::Vector3d t, const PointCloudXYZI::Ptr &input_cloud, PointCloudXYZI::Ptr &trans_cloud);
-  void pointBodyToWorld(const PointType &pi, PointType &po);
- 
-  void RGBpointBodyToWorld(PointType const *const pi, PointType *const po);
-  void standard_pcl_cbk(const sensor_msgs::msg::PointCloud2::ConstSharedPtr &msg);
-  void livox_pcl_cbk(const livox_ros_driver2::msg::CustomMsg::ConstSharedPtr &msg_in);
-  void imu_cbk(const sensor_msgs::msg::Imu::ConstSharedPtr &msg_in);
-  void img_cbk(const sensor_msgs::msg::Image::ConstSharedPtr &msg_in);
-  void publish_img_rgb(const image_transport::Publisher &pubImage, VIOManagerPtr vio_manager);
-  void publish_frame_world(const rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr &pubLaserCloudFullRes, VIOManagerPtr vio_manager);
-  void publish_visual_sub_map(const rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr &pubSubVisualMap);
-  void publish_effect_world(const rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr &pubLaserCloudEffect, const std::vector<PointToPlane> &ptpl_list);
-  void publish_odometry(const rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr &pmavros_pose_publisherubOdomAftMapped);
-  void publish_mavros(const rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr &mavros_pose_publisher);
-  void publish_path(const rclcpp::Publisher<nav_msgs::msg::Path>::SharedPtr &pubPath);
-  void readParameters(rclcpp::Node::SharedPtr &node);
-  template <typename T> void set_posestamp(T &out);
-  template <typename T> void pointBodyToWorld(const Eigen::Matrix<T, 3, 1> &pi, Eigen::Matrix<T, 3, 1> &po);
-  template <typename T> Eigen::Matrix<T, 3, 1> pointBodyToWorld(const Eigen::Matrix<T, 3, 1> &pi);
-  cv::Mat getImageFromMsg(const sensor_msgs::msg::Image::ConstSharedPtr &img_msg);
+  void transformLidar(const Eigen::Matrix3d rot, const Eigen::Vector3d t, const PointCloudXYZI::Ptr& input_cloud, PointCloudXYZI::Ptr& trans_cloud);
+  void pointBodyToWorld(const PointType& pi, PointType& po);
+
+  void RGBpointBodyToWorld(PointType const* const pi, PointType* const po);
+  void standard_pcl_cbk(const sensor_msgs::msg::PointCloud2::ConstSharedPtr& msg);
+  void livox_pcl_cbk(const livox_ros_driver2::msg::CustomMsg::ConstSharedPtr& msg_in);
+  void imu_cbk(const sensor_msgs::msg::Imu::ConstSharedPtr& msg_in);
+  void img_cbk(const sensor_msgs::msg::Image::ConstSharedPtr& msg_in);
+  void publish_img_rgb(const image_transport::Publisher& pubImage, VIOManagerPtr vio_manager);
+  void publish_camera_info(VIOManagerPtr vio_manager, double timestamp);
+  void publish_camera_extrinsics(VIOManagerPtr vio_manager, double timestamp); // 添加发布相机外参的函数声明
+  void publish_frame_world(const rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr& pubLaserCloudFullRes, VIOManagerPtr vio_manager);
+  void publish_visual_sub_map(const rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr& pubSubVisualMap);
+  void publish_effect_world(const rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr& pubLaserCloudEffect, const std::vector<PointToPlane>& ptpl_list);
+  void publish_odometry(const rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr& pmavros_pose_publisherubOdomAftMapped);
+  void publish_mavros(const rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr& mavros_pose_publisher);
+  void publish_path(const rclcpp::Publisher<nav_msgs::msg::Path>::SharedPtr& pubPath);
+  void readParameters(rclcpp::Node::SharedPtr& node);
+  template <typename T> void set_posestamp(T& out);
+  template <typename T> void pointBodyToWorld(const Eigen::Matrix<T, 3, 1>& pi, Eigen::Matrix<T, 3, 1>& po);
+  template <typename T> Eigen::Matrix<T, 3, 1> pointBodyToWorld(const Eigen::Matrix<T, 3, 1>& pi);
+  cv::Mat getImageFromMsg(const sensor_msgs::msg::Image::ConstSharedPtr& img_msg);
 
   std::mutex mtx_buffer, mtx_buffer_imu_prop;
   std::condition_variable sig_buffer;
 
   SLAM_MODE slam_mode_;
-  std::unordered_map<VOXEL_LOCATION, VoxelOctoTree *> voxel_map;
-  
+  std::unordered_map<VOXEL_LOCATION, VoxelOctoTree*> voxel_map;
+
   string root_dir;
   string lid_topic, imu_topic, seq_name, img_topic;
   V3D extT;
@@ -180,6 +184,8 @@ public:
   rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr pubLaserCloudDynRmed;
   rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr pubLaserCloudDynDbg;
   image_transport::Publisher pubImage;
+  rclcpp::Publisher<sensor_msgs::msg::CameraInfo>::SharedPtr pubCameraInfo;  // 相机内参publisher
+  rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr pubCameraExtrinsics;  // 相机外参publisher
   rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr mavros_pose_publisher;
   rclcpp::TimerBase::SharedPtr imu_prop_timer;
   rclcpp::Node::SharedPtr node;

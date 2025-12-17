@@ -1,4 +1,4 @@
-/* 
+/*
 This file is part of FAST-LIVO2: Fast, Direct LiDAR-Inertial-Visual Odometry.
 
 Developer: Chunran Zheng <zhengcr@connect.hku.hk>
@@ -29,7 +29,7 @@ struct SubSparseMap
   vector<float> errors;
   vector<vector<float>> warp_patch;
   vector<int> search_levels;
-  vector<VisualPoint *> voxel_points;
+  vector<VisualPoint*> voxel_points;
   vector<double> inv_expo_list;
   vector<pointWithVar> add_from_voxel_map;
 
@@ -68,12 +68,12 @@ public:
 class VOXEL_POINTS
 {
 public:
-  std::vector<VisualPoint *> voxel_points;
+  std::vector<VisualPoint*> voxel_points;
   int count;
   VOXEL_POINTS(int num) : count(num) {}
-  ~VOXEL_POINTS() 
-  { 
-    for (VisualPoint* vp : voxel_points) 
+  ~VOXEL_POINTS()
+  {
+    for (VisualPoint* vp : voxel_points)
     {
       if (vp != nullptr) { delete vp; vp = nullptr; }
     }
@@ -84,10 +84,10 @@ class VIOManager
 {
 public:
   int grid_size;
-  vk::AbstractCamera *cam;
-  vk::PinholeCamera *pinhole_cam;
-  StatesGroup *state;
-  StatesGroup *state_propagat;
+  vk::AbstractCamera* cam;
+  vk::PinholeCamera* pinhole_cam;
+  StatesGroup* state;
+  StatesGroup* state_propagat;
   M3D Rli, Rci, Rcl, Rcw, Jdphi_dR, Jdp_dt, Jdp_dR;
   V3D Pli, Pci, Pcl, Pcw;
   vector<int> grid_num;
@@ -107,8 +107,8 @@ public:
   int max_iterations, total_points;
 
   double img_point_cov, outlier_threshold, ncc_thre;
-  
-  SubSparseMap *visual_submap;
+
+  SubSparseMap* visual_submap;
   std::vector<std::vector<V3D>> rays_with_sample_points;
 
   double compute_jacobian_time, update_ekf_time;
@@ -122,14 +122,14 @@ public:
   Eigen::Matrix<double, DIM_STATE, DIM_STATE> G, H_T_H;
   Eigen::MatrixXd K, H_sub_inv;
 
-  ofstream fout_camera, fout_colmap;
-  unordered_map<VOXEL_LOCATION, VOXEL_POINTS *> feat_map;
-  unordered_map<VOXEL_LOCATION, int> sub_feat_map; 
-  unordered_map<int, Warp *> warp_map;
-  vector<VisualPoint *> retrieve_voxel_points;
+  ofstream fout_camera, fout_colmap, fout_point3d;
+  unordered_map<VOXEL_LOCATION, VOXEL_POINTS*> feat_map;
+  unordered_map<VOXEL_LOCATION, int> sub_feat_map;
+  unordered_map<int, Warp*> warp_map;
+  vector<VisualPoint*> retrieve_voxel_points;
   vector<pointWithVar> append_voxel_points;
   FramePtr new_frame_;
-  cv::Mat img_cp, img_rgb, img_test;
+  cv::Mat img_cp, img_rgb, img_test, img_rgb_undistort;
 
   enum CellType
   {
@@ -142,35 +142,35 @@ public:
   ~VIOManager();
   void updateStateInverse(cv::Mat img, int level);
   void updateState(cv::Mat img, int level);
-  void processFrame(cv::Mat &img, vector<pointWithVar> &pg, const unordered_map<VOXEL_LOCATION, VoxelOctoTree *> &feat_map, double img_time);
-  void retrieveFromVisualSparseMap(cv::Mat img, vector<pointWithVar> &pg, const unordered_map<VOXEL_LOCATION, VoxelOctoTree *> &plane_map);
-  void generateVisualMapPoints(cv::Mat img, vector<pointWithVar> &pg);
-  void setImuToLidarExtrinsic(const V3D &transl, const M3D &rot);
-  void setLidarToCameraExtrinsic(vector<double> &R, vector<double> &P);
+  void processFrame(cv::Mat& img, vector<pointWithVar>& pg, const unordered_map<VOXEL_LOCATION, VoxelOctoTree*>& feat_map, double img_time);
+  void retrieveFromVisualSparseMap(cv::Mat img, vector<pointWithVar>& pg, const unordered_map<VOXEL_LOCATION, VoxelOctoTree*>& plane_map);
+  void generateVisualMapPoints(cv::Mat img, vector<pointWithVar>& pg);
+  void setImuToLidarExtrinsic(const V3D& transl, const M3D& rot);
+  void setLidarToCameraExtrinsic(vector<double>& R, vector<double>& P);
   void initializeVIO();
-  void getImagePatch(cv::Mat img, V2D pc, float *patch_tmp, int level);
-  void computeProjectionJacobian(V3D p, MD(2, 3) & J);
+  void getImagePatch(cv::Mat img, V2D pc, float* patch_tmp, int level);
+  void computeProjectionJacobian(V3D p, MD(2, 3)& J);
   void computeJacobianAndUpdateEKF(cv::Mat img);
   void resetGrid();
   void updateVisualMapPoints(cv::Mat img);
-  void getWarpMatrixAffine(const vk::AbstractCamera &cam, const Vector2d &px_ref, const Vector3d &f_ref, const double depth_ref, const SE3<double> &T_cur_ref,
-                           const int level_ref, 
-                           const int pyramid_level, const int halfpatch_size, Matrix2d &A_cur_ref);
-  void getWarpMatrixAffineHomography(const vk::AbstractCamera &cam, const V2D &px_ref,
-                                     const V3D &xyz_ref, const V3D &normal_ref, const SE3<double> &T_cur_ref, const int level_ref, Matrix2d &A_cur_ref);
-  void warpAffine(const Matrix2d &A_cur_ref, const cv::Mat &img_ref, const Vector2d &px_ref, const int level_ref, const int search_level,
-                  const int pyramid_level, const int halfpatch_size, float *patch);
-  void insertPointIntoVoxelMap(VisualPoint *pt_new);
+  void getWarpMatrixAffine(const vk::AbstractCamera& cam, const Vector2d& px_ref, const Vector3d& f_ref, const double depth_ref, const SE3<double>& T_cur_ref,
+    const int level_ref,
+    const int pyramid_level, const int halfpatch_size, Matrix2d& A_cur_ref);
+  void getWarpMatrixAffineHomography(const vk::AbstractCamera& cam, const V2D& px_ref,
+    const V3D& xyz_ref, const V3D& normal_ref, const SE3<double>& T_cur_ref, const int level_ref, Matrix2d& A_cur_ref);
+  void warpAffine(const Matrix2d& A_cur_ref, const cv::Mat& img_ref, const Vector2d& px_ref, const int level_ref, const int search_level,
+    const int pyramid_level, const int halfpatch_size, float* patch);
+  void insertPointIntoVoxelMap(VisualPoint* pt_new);
   void plotTrackedPoints();
   void updateFrameState(StatesGroup state);
-  void projectPatchFromRefToCur(const unordered_map<VOXEL_LOCATION, VoxelOctoTree *> &plane_map);
-  void updateReferencePatch(const unordered_map<VOXEL_LOCATION, VoxelOctoTree *> &plane_map);
+  void projectPatchFromRefToCur(const unordered_map<VOXEL_LOCATION, VoxelOctoTree*>& plane_map);
+  void updateReferencePatch(const unordered_map<VOXEL_LOCATION, VoxelOctoTree*>& plane_map);
   void precomputeReferencePatches(int level);
   void dumpDataForColmap();
-  double calculateNCC(float *ref_patch, float *cur_patch, int patch_size);
-  int getBestSearchLevel(const Matrix2d &A_cur_ref, const int max_level);
+  double calculateNCC(float* ref_patch, float* cur_patch, int patch_size);
+  int getBestSearchLevel(const Matrix2d& A_cur_ref, const int max_level);
   V3F getInterpolatedPixel(cv::Mat img, V2D pc);
-  
+
   // void resetRvizDisplay();
   // deque<VisualPoint *> map_cur_frame;
   // deque<VisualPoint *> sub_map_ray;
