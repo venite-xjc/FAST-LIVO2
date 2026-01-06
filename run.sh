@@ -1,0 +1,2 @@
+ros2 launch fast_livo mapping_avia.launch.py use_rviz:=True avia_params_file:=/home/xjc/code/fast_livo2_ws/src/FAST-LIVO2/config/ours.yaml    camera_params_file:=/home/xjc/code/fast_livo2_ws/src/FAST-LIVO2/config/ours_pinhole.yaml
+ros2 launch fast_livo mapping_avia.launch.py use_rviz:=True avia_params_file:=/home/xjc/code/fast_livo2_ws/src/FAST-LIVO2/config/ours.yaml    camera_params_file:=/home/xjc/code/fast_livo2_ws/src/FAST-LIVO2/config/ours_pinhole.yaml
