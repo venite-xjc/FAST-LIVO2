@@ -273,7 +273,7 @@ void LIVMapper::initializeSubscribersAndPublishers(rclcpp::Node::SharedPtr& node
     sub_pcl = this->node->create_subscription<sensor_msgs::msg::PointCloud2>(lid_topic, 200000, std::bind(&LIVMapper::standard_pcl_cbk, this, std::placeholders::_1));
   }
   sub_imu = this->node->create_subscription<sensor_msgs::msg::Imu>(imu_topic, 200000, std::bind(&LIVMapper::imu_cbk, this, std::placeholders::_1));
-  sub_img = this->node->create_subscription<sensor_msgs::msg::Image>(img_topic, 200000, std::bind(&LIVMapper::img_cbk, this, std::placeholders::_1));
+  sub_img = this->node->create_subscription<sensor_msgs::msg::CompressedImage>(img_topic, 200000, std::bind(&LIVMapper::img_cbk, this, std::placeholders::_1));
 
   pubLaserCloudFullRes = this->node->create_publisher<sensor_msgs::msg::PointCloud2>("/cloud_registered", 100);
   pubNormal = this->node->create_publisher<visualization_msgs::msg::MarkerArray>("/visualization_marker", 100);
@@ -563,6 +563,7 @@ void LIVMapper::handleLIO()
 
 void LIVMapper::savePCD()
 {
+  printf("Saving PCD...\n");
   if (pcd_save_en && (pcl_wait_save->points.size() > 0 || pcl_wait_save_intensity->points.size() > 0) && pcd_save_interval < 0)
   {
     std::string raw_points_dir = std::string(ROOT_DIR) + "Log/PCD/all_raw_points.pcd";
@@ -886,18 +887,18 @@ void LIVMapper::imu_cbk(const sensor_msgs::msg::Imu::ConstSharedPtr& msg_in)
   sig_buffer.notify_all();
 }
 
-cv::Mat LIVMapper::getImageFromMsg(const sensor_msgs::msg::Image::ConstSharedPtr& img_msg)
+cv::Mat LIVMapper::getImageFromMsg(const sensor_msgs::msg::CompressedImage::ConstSharedPtr& img_msg)
 {
   cv::Mat img;
-  img = cv_bridge::toCvShare(img_msg, "bgr8")->image;
+  img = cv_bridge::toCvCopy(img_msg, "bgr8")->image;
   return img;
 }
 
 // static int i = 0;
-void LIVMapper::img_cbk(const sensor_msgs::msg::Image::ConstSharedPtr& msg_in)
+void LIVMapper::img_cbk(const sensor_msgs::msg::CompressedImage::ConstSharedPtr& msg_in)
 {
   if (!img_en) return;
-  sensor_msgs::msg::Image::SharedPtr msg(new sensor_msgs::msg::Image(*msg_in));
+  sensor_msgs::msg::CompressedImage::SharedPtr msg(new sensor_msgs::msg::CompressedImage(*msg_in));
   // if ((abs(stamp2Sec(msg->header.stamp) - last_timestamp_img) > 0.2 && last_timestamp_img > 0) || sync_jump_flag)
   // {
   //   RCLCPP_WARN(this->node->get_logger(), "img jumps %.3f\n", stamp2Sec(msg->header.stamp) - last_timestamp_img);
@@ -936,6 +937,21 @@ void LIVMapper::img_cbk(const sensor_msgs::msg::Image::ConstSharedPtr& msg_in)
   }
 
   cv::Mat img_cur = getImageFromMsg(msg);
+  // static int raw_img_count_1 = 0;
+  // // cv::Mat raw_img = getImageFromMsg(msg);
+  // cv::Mat raw_img = img_cur;
+  // std::string raw_img_dir = std::string(ROOT_DIR) + "Log/raw_images_1";
+  // std::string raw_img_path = raw_img_dir + "/" + std::to_string(raw_img_count_1) + ".jpg";
+
+  // // 创建目录（如果不存在）
+  // struct stat info;
+  // if (stat(raw_img_dir.c_str(), &info) != 0) {
+  //   mkdir(raw_img_dir.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+  // }
+
+  // // 保存图像
+  // cv::imwrite(raw_img_path, raw_img);
+  // raw_img_count_1++;
   img_buffer.push_back(img_cur);
   img_time_buffer.push_back(img_time_correct);
 
@@ -1122,6 +1138,21 @@ bool LIVMapper::sync_packages(LidarMeasureGroup& meas)
       m.vio_time = img_capture_time;
       m.lio_time = meas.last_lio_update_time;
       m.img = img_buffer.front();
+      // static int raw_img_count = 0;
+      // // cv::Mat raw_img = getImageFromMsg(msg);
+      // cv::Mat raw_img = m.img;
+      // std::string raw_img_dir = std::string(ROOT_DIR) + "Log/raw_images";
+      // std::string raw_img_path = raw_img_dir + "/" + std::to_string(raw_img_count) + ".jpg";
+
+      // // 创建目录（如果不存在）
+      // struct stat info;
+      // if (stat(raw_img_dir.c_str(), &info) != 0) {
+      //   mkdir(raw_img_dir.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+      // }
+
+      // // 保存图像
+      // cv::imwrite(raw_img_path, raw_img);
+      // raw_img_count++;
       mtx_buffer.lock();
       // while ((!imu_buffer.empty() && (imu_time < img_capture_time)))
       // {

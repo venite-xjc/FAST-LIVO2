@@ -1828,6 +1828,7 @@ void VIOManager::processFrame(cv::Mat& img, vector<pointWithVar>& pg, const unor
 {
   if (width != img.cols || height != img.rows)
   {
+    printf("[ VIO ] Image Size Error! Expect to get [%d %d], but get [%d %d]\n", width, height, img.cols, img.rows);
     if (img.empty()) printf("[ VIO ] Empty Image!\n");
     cv::resize(img, img, cv::Size(img.cols * image_resize_factor, img.rows * image_resize_factor), 0, 0, CV_INTER_LINEAR);
   }

@@ -56,7 +56,7 @@ public:
   void standard_pcl_cbk(const sensor_msgs::msg::PointCloud2::ConstSharedPtr& msg);
   void livox_pcl_cbk(const livox_ros_driver2::msg::CustomMsg::ConstSharedPtr& msg_in);
   void imu_cbk(const sensor_msgs::msg::Imu::ConstSharedPtr& msg_in);
-  void img_cbk(const sensor_msgs::msg::Image::ConstSharedPtr& msg_in);
+  void img_cbk(const sensor_msgs::msg::CompressedImage::ConstSharedPtr& msg_in);
   void publish_img_rgb(const image_transport::Publisher& pubImage, VIOManagerPtr vio_manager);
   void publish_camera_info(VIOManagerPtr vio_manager, double timestamp);
   void publish_camera_extrinsics(VIOManagerPtr vio_manager, double timestamp); // 添加发布相机外参的函数声明
@@ -70,7 +70,7 @@ public:
   template <typename T> void set_posestamp(T& out);
   template <typename T> void pointBodyToWorld(const Eigen::Matrix<T, 3, 1>& pi, Eigen::Matrix<T, 3, 1>& po);
   template <typename T> Eigen::Matrix<T, 3, 1> pointBodyToWorld(const Eigen::Matrix<T, 3, 1>& pi);
-  cv::Mat getImageFromMsg(const sensor_msgs::msg::Image::ConstSharedPtr& img_msg);
+  cv::Mat getImageFromMsg(const sensor_msgs::msg::CompressedImage::ConstSharedPtr& img_msg);
 
   std::mutex mtx_buffer, mtx_buffer_imu_prop;
   std::condition_variable sig_buffer;
@@ -172,7 +172,7 @@ public:
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr voxel_pub;
   std::shared_ptr<rclcpp::SubscriptionBase> sub_pcl;
   rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr sub_imu;
-  rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr sub_img;
+  rclcpp::Subscription<sensor_msgs::msg::CompressedImage>::SharedPtr sub_img;
   rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr pubLaserCloudFullRes;
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr pubNormal;
   rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr pubSubVisualMap;
